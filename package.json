@@ -1,0 +1,6 @@
+{
+  "name": "noom_2003",
+  "version": "1.0.0",
+  "description": "Zoom Clone using NodeJS, WebRTC and Websockets",
+  "license": "ISC"
+}
