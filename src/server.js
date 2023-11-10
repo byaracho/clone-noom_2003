@@ -2,5 +2,11 @@ import express from "express";
 
 const app = express();
 
+app.set("view engine", "pug"); // 뷰 엔진 pug로 설정
+app.set("views", __dirname + "/views"); // 뷰 파일 폴더 지정
+
+app.get("/", (req, res) => res.render("home")); // HTTP 요청이 왔을 때 라우팅 처리할 뷰 파일
+app.get("/*", (req, res) => res.redirect("/")); // HTTP 요청이 왔을 때 라우팅 처리할 주소
+
 const handleListen = () => console.log("Listening on http://localhost:3000")
 app.listen(3000, handleListen);
