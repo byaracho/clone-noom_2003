@@ -16,4 +16,13 @@ const handleListen = () => console.log("Listening on http://localhost:3000")
 const server = http.createServer(app); // http 서버 생성
 const wss = new WebSocket.Server({ server }); // 웹소켓 서버에 http 서버 전달
 
+wss.on("connection", (socket) => {
+  console.log("Connected to Browser");
+  socket.on("close", () => console.log("Disconnected from Browser"));
+  socket.on("message", (message) => {
+    console.log(`${message}`)
+  });
+  socket.send("hello!!");
+}) // 첫번째 인자(connection) 발생 기다렸다가 두번째 인자인 익명 함수(콜백 함수) 호출
+
 server.listen(3000, handleListen);
