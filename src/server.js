@@ -1,3 +1,6 @@
+import http from "http";
+import WebSocket from "ws";
+
 import express from "express";
 
 const app = express();
@@ -9,4 +12,8 @@ app.get("/", (req, res) => res.render("home")); // HTTP 요청이 왔을 때 라
 app.get("/*", (req, res) => res.redirect("/")); // HTTP 요청이 왔을 때 라우팅 처리할 주소
 
 const handleListen = () => console.log("Listening on http://localhost:3000")
-app.listen(3000, handleListen);
+
+const server = http.createServer(app); // http 서버 생성
+const wss = new WebSocket.Server({ server }); // 웹소켓 서버에 http 서버 전달
+
+server.listen(3000, handleListen);
