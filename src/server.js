@@ -20,10 +20,17 @@ const sockets = [];
 
 wss.on("connection", (socket) => {
   sockets.push(socket);
+  socket["nickname"] = "Anonymous"
   console.log("Connected to Browser");
   socket.on("close", () => console.log("Disconnected from Browser"));
-  socket.on("message", (message) => {
-    sockets.forEach(aSocket => aSocket.send(`${message}`));
+  socket.on("message", (msg) => {
+    const message = JSON.parse(msg);
+    switch (message.type) {
+      case "new_message":
+        sockets.forEach(aSocket => aSocket.send(`${socket.nickname}: ${message.payload}`));
+      case "nickname":
+        socket["nickname"] = message.payload;
+    }
   });
 }) // 첫번째 인자(connection) 발생 기다렸다가 두번째 인자인 익명 함수(콜백 함수) 호출
 
