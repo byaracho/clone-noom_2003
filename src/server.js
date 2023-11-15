@@ -14,7 +14,15 @@ const httpServer = http.createServer(app);
 const wsServer = SocketIO(httpServer);
 
 wsServer.on("connection", (socket) => {
-  console.log(socket);
+  socket.on("enter_room", (roomName, done) => {
+    console.log(roomName);
+    setTimeout(() => {
+      console.log(roomName);
+      setTimeout(() => {
+        done(); // done: 콜백 함수 전달받는 역할 *프론트에서 정의한 콜백함수를 서버에서 호출할 수 있음(서버 보안 위험 주의)
+      }, 5000);
+    })
+  }); // on: 이벤트 핸들링 메서드
 })
 
 const handleListen = () => console.log("Listening on http://localhost:3000");
