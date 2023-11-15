@@ -26,7 +26,7 @@ socket.addEventListener("close", () => {
 function handleSubmit(event) {
   event.preventDefault(); // 이벤트를 취소하는 메서드, 이벤트가 제공하는 원래 기능을 사용하지 않고자 할 때 사용
   const input = messageForm.querySelector("input");
-  socket.send(makeMessage("new_message", input.value)) // 브라우저에서 JSON 객체를 문자열로 변환해서 서버로 전달
+  socket.send(makeMessage("new_message", input.value)); // 브라우저에서 JSON 객체를 문자열로 변환해서 서버로 전달
   input.value = "";
 }
 
@@ -37,6 +37,5 @@ function handleNickSubmit(event) {
   input.value = "";
 }
 
-
 messageForm.addEventListener("submit", handleSubmit);
-messageForm.addEventListener("submit", handleNickSubmit);
+nickForm.addEventListener("submit", handleNickSubmit);
