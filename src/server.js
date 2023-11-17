@@ -16,11 +16,8 @@ const wsServer = SocketIO(httpServer);
 wsServer.on("connection", (socket) => {
   socket.on("enter_room", (roomName, done) => {
     done(); // app.js에 작성된 showRoom 함수 호출
-    console.log(roomName);
-    console.log(socket.id);
-    console.log(socket.rooms);
     socket.join(roomName); // 서버에 접속한 사용자를 room 단위로 묶는 기능
-    console.log(socket.rooms);
+    socket.to(roomName).emit("welcome");
   })
 })
 
