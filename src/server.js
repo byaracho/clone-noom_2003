@@ -13,18 +13,41 @@ app.get("/*", (req, res) => res.redirect("/")); // HTTP 요청이 왔을 때 라
 const httpServer = http.createServer(app);
 const wsServer = SocketIO(httpServer);
 
+function publicRooms() {
+  // const sids = wsServer.sockets.adapter.sids;
+  // const rooms = wsServer.sockets.adapter.rooms;
+  const {
+    sockets: {
+      adapter: { sids, rooms },  // 구조 분해 할당
+    },
+  } = wsServer;
+
+  const publicRooms = [];
+  // map에서 forEach는 value, key 전달
+  rooms.forEach((_, key) => {
+    if (sids.get(key) === undefined) {
+      publicRooms.push(key)
+    }
+  })
+  return publicRooms;
+}
+
 wsServer.on("connection", (socket) => {
   socket["nickname"] = "Anon";
   socket.on("enter_room", (roomName, done) => {
     done(); // app.js에 작성된 showRoom 함수 호출
     socket.join(roomName); // 서버에 접속한 사용자를 room 단위로 묶는 기능
     socket.to(roomName).emit("welcome", socket.nickname);
+    wsServer.sockets.emit("room_change", publicRooms()); // 새로운 사용자가 접속할때 모든 채팅룸에 전달
   });
   socket.on("disconnecting", () => {
     socket.rooms.forEach((room) =>
       socket.to(room).emit("bye", socket.nickname)
     );
   });
+  socket.on("disconnect", () => {
+    wsServer.sockets.emit("room_change", publicRooms());
+  }); // disconnecting: 사용자와 연결이 완전히 해제되기 직전에 발생하는 이벤트, disconnect: 완전히 해제되었을 때 발생하는 이벤트
   socket.on("new_message", (msg, room, done) => {
     socket.to(room).emit("new_message", `${socket.nickname}: ${msg}`);
     done();
