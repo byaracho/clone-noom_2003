@@ -18,6 +18,13 @@ wsServer.on("connection", (socket) => {
     done(); // app.js에 작성된 showRoom 함수 호출
     socket.join(roomName); // 서버에 접속한 사용자를 room 단위로 묶는 기능
     socket.to(roomName).emit("welcome");
+  });
+  socket.on("disconnecting", () => {
+    socket.rooms.forEach(room => socket.to(room).emit("bye"));
+  });
+  socket.on("new_message", (msg, room, done) => {
+    socket.to(room).emit("new_message", msg);
+    done();
   })
 })
 
