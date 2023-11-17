@@ -1,5 +1,6 @@
 import http from "http";
-import SocketIO from "socket.io";
+import { Server } from "socket.io";
+import { instrument } from "@socket.io/admin-ui";
 import express from "express";
 
 const app = express();
@@ -11,7 +12,17 @@ app.get("/", (req, res) => res.render("home")); // HTTP 요청이 왔을 때 라
 app.get("/*", (req, res) => res.redirect("/")); // HTTP 요청이 왔을 때 라우팅 처리할 주소
 
 const httpServer = http.createServer(app);
-const wsServer = SocketIO(httpServer);
+// const wsServer = SocketIO(httpServer);
+const wsServer = new Server(httpServer, {
+  cors: {
+    origin: ["https://admin.socket.io"],
+    credentials: true
+  }
+});
+
+instrument(wsServer, {
+  auth: false
+});
 
 function publicRooms() {
   // const sids = wsServer.sockets.adapter.sids;
