@@ -32,17 +32,21 @@ function publicRooms() {
   return publicRooms;
 }
 
+function countRoom(roomName) {
+  return wsServer.sockets.adapter.rooms.get(roomName)?.size; // ?연산자로 채팅룸이 있는 경우만 size 얻음
+}
+
 wsServer.on("connection", (socket) => {
   socket["nickname"] = "Anon";
   socket.on("enter_room", (roomName, done) => {
     done(); // app.js에 작성된 showRoom 함수 호출
     socket.join(roomName); // 서버에 접속한 사용자를 room 단위로 묶는 기능
-    socket.to(roomName).emit("welcome", socket.nickname);
+    socket.to(roomName).emit("welcome", socket.nickname, countRoom(roomName));
     wsServer.sockets.emit("room_change", publicRooms()); // 새로운 사용자가 접속할때 모든 채팅룸에 전달
   });
   socket.on("disconnecting", () => {
     socket.rooms.forEach((room) =>
-      socket.to(room).emit("bye", socket.nickname)
+      socket.to(room).emit("bye", socket.nickname, countRoom(room) - 1) // 연결이 해제되기 직전이기 때문에 해제될 사람 수를 미리 빼줌
     );
   });
   socket.on("disconnect", () => {
