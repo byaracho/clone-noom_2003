@@ -17,11 +17,19 @@ function addMessage(message) {
 
 function handleMessageSubmit(event) {
   event.preventDefault();
-  const input = room.querySelector("input");
+  const input = room.querySelector("#msg input");
   const value = input.value;
   socket.emit("new_message", value, roomName, () => {
     addMessage(`You: ${value}`);
   }); // new_message 이벤트 발생 - 서버에 input, roomName, 콜백함수(addMessage) 같이 전달
+  input.value = "";
+}
+
+function handleNicknameSubmit(event) {
+  event.preventDefault();
+  const input = room.querySelector("#name input");
+  const value = input.value;
+  socket.emit("nickname", value);
   input.value = "";
 }
 
@@ -30,8 +38,10 @@ function showRoom() {
   room.hidden = false;
   const h3 = room.querySelector("h3");
   h3.innerText = `Room ${roomName}`;
-  const form = room.querySelector("form");
-  form.addEventListener("submit", handleMessageSubmit); // 폼에서 적은 메시지 처리하기 위해 이벤트 핸들러 함수 추가
+  const msgForm = room.querySelector("#msg");
+  const nameForm = room.querySelector("#name");
+  msgForm.addEventListener("submit", handleMessageSubmit);
+  nameForm.addEventListener("submit", handleNicknameSubmit);
 }
 
 // 이벤트 핸들러 함수: socket에 데이터를 보내는 역할
@@ -46,12 +56,12 @@ function handleRoomSubmit(event) {
 
 form.addEventListener("submit", handleRoomSubmit);
 
-socket.on("welcome", () => {
-  addMessage("someone joined!");
+socket.on("welcome", (userNickname) => {
+  addMessage(`${userNickname} arrived!`);
 })
 
-socket.on("bye", () => {
-  addMessage("someone left ㅠㅠ");
+socket.on("bye", (userNickname) => {
+  addMessage(`${userNickname} left ㅠㅠ`);
 })
 
 socket.on("new_message", (msg) => {
