@@ -82,6 +82,13 @@ function handleCameraClick() {
 
 async function handleCameraChange() {
   await getMedia(cameraSelect.value);
+  if (myPeerConnection) {
+    const videoTrack = myStream.getVideoTracks()[0];
+    const videoSender = myPeerConnection
+      .getSenders()
+      .find((sender) => sender.track.kind === "video");
+    videoSender.replaceTrack(videoTrack);
+  }
 }
 
 muteBtn.addEventListener("click", handleMuteClick);
@@ -121,6 +128,7 @@ socket.on("welcome", async () => {
 });  // offer 보내는 쪽에서 실행
 
 socket.on("offer", async (offer) => {
+  console.log("received the offer");
   myPeerConnection.setRemoteDescription(offer); // offer 받기
   const answer = await myPeerConnection.createAnswer();
   myPeerConnection.setLocalDescription(answer);
@@ -128,12 +136,32 @@ socket.on("offer", async (offer) => {
 });  // offer 받는 쪽에서 실행
 
 socket.on("answer", answer => {
+  console.log("received the answer");
   myPeerConnection.setRemoteDescription(answer);
 });  // offer 보냈던 쪽에서 answer 받으면서 실행
+
+socket.on("ice", ice => {
+  console.log("received candidate");
+  myPeerConnection.addIceCandidate(ice);
+})
 
 // RTC Code
 function makeConnection() {
   myPeerConnection = new RTCPeerConnection() // peer 간의 연결에 사용할 객체 생성
+  myPeerConnection.addEventListener("icecandidate", handleIce);
+  myPeerConnection.addEventListener("addstream", handleAddStream);
   myStream.getTracks()
     .forEach(track => myPeerConnection.addTrack(track, myStream)); // 미디어 포함
+}
+
+function handleIce(data) {
+  console.log("sent candidate");
+  socket.emit("ice", data.cadidate, roomName);
+}
+
+function handleAddStream(data) {
+  console.log("peer", data.stream)
+  console.log("my", myStream)
+  const peerFace = document.getElementById("peerFace");
+  peerFace.srcObject = data.stream;
 }
