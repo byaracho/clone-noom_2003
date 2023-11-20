@@ -94,17 +94,18 @@ const welcomeForm = welcome.querySelector("form");
 
 call.hidden = true;
 
-async function startMedia() {
+async function initCall() {
   welcome.hidden = true;
   call.hidden = false;
   await getMedia();
   makeConnection();
 }
 
-function handleWelcomeSubmit(event) {
+async function handleWelcomeSubmit(event) {
   event.preventDefault();
   const input = welcomeForm.querySelector("input");
-  socket.emit("join_room", input.value, startMedia);
+  await initCall(); // 사용자가 채팅룸에 접속하기 전에 myPeerConnection 객체 생성되도록 호출
+  socket.emit("join_room", input.value);
   roomName = input.value;
   input.value = "";
 }
@@ -117,11 +118,18 @@ socket.on("welcome", async () => {
   myPeerConnection.setLocalDescription(offer);
   console.log("sent the offer");
   socket.emit("offer", offer, roomName); // socket.io 이용해서 offer 전달
-});
+});  // offer 보내는 쪽에서 실행
 
-socket.on("offer", offer => {
-  console.log(offer);
-})
+socket.on("offer", async (offer) => {
+  myPeerConnection.setRemoteDescription(offer); // offer 받기
+  const answer = await myPeerConnection.createAnswer();
+  myPeerConnection.setLocalDescription(answer);
+  socket.emit("answer", answer, roomName);
+});  // offer 받는 쪽에서 실행
+
+socket.on("answer", answer => {
+  myPeerConnection.setRemoteDescription(answer);
+});  // offer 보냈던 쪽에서 answer 받으면서 실행
 
 // RTC Code
 function makeConnection() {

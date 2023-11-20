@@ -14,14 +14,16 @@ const httpServer = http.createServer(app);
 const wsServer = SocketIO(httpServer);
 
 wsServer.on("connection", (socket) => {
-  socket.on("join_room", (roomName, done) => {
+  socket.on("join_room", (roomName) => {
     socket.join(roomName);
-    done();
     socket.to(roomName).emit("welcome");
   });
   socket.on("offer", (offer, roomName) => {
     socket.to(roomName).emit("offer", offer);
   }); // 브라우저에서 오퍼와 채팅룸 이름을 보내서 해당 채팅룸에 접속하는 모든 사용자에게 offer 이벤트와 offer 객체 전달
+  socket.on("answer", (answer, roomName) => {
+    socket.to(roomName).emit("answer", answer);
+  });
 });
 
 const handleListen = () => console.log("Listening on http://localhost:3000");
